@@ -1,6 +1,7 @@
 import subprocess
 import os
 from typing import Union, List, Dict, Any
+from datetime import datetime
 
 def _build_frame_reduction_cmd(
     input_path: str, 
@@ -24,7 +25,7 @@ def _build_frame_reduction_cmd(
 
 def reduce_video_frames(
     input_path: str, 
-    output_path: str, 
+    output_path: None, 
     target_fps: float = 15.0
 ) -> Dict[str, Any]:
     """
@@ -35,6 +36,26 @@ def reduce_video_frames(
     :param target_fps: 目标帧率（例如：原视频30fps，设为15fps可减半帧数）
     :return: 包含执行状态的字典
     """
+
+
+
+    # 1. 自动处理输出文件路径
+    if not output_path:
+        # 获取输入文件的目录、文件名和扩展名
+        input_dir = os.path.dirname(input_path)
+        input_filename_no_ext = os.path.splitext(os.path.basename(input_path))[0]
+        input_ext = os.path.splitext(input_path)[1]
+        
+        # 生成当前时间戳，精确到毫秒
+        timestamp = datetime.now().strftime("%Y年%m月%d日%H时%M分%S秒%f")[:-3]
+        
+        # 构建新的文件名：原文件名_时间戳.扩展名
+        new_filename = f"{input_filename_no_ext}_减少帧_{timestamp}{input_ext}"
+        
+        # 组合成完整的输出路径
+        output_path = os.path.join(input_dir, new_filename)
+        print(f"ℹ️ 未指定输出路径，将自动生成: {output_path}")
+
     try:
         # 1. 纯函数构建命令
         cmd = _build_frame_reduction_cmd(input_path, output_path, target_fps)
@@ -66,7 +87,7 @@ if __name__ == "__main__":
 
     result = reduce_video_frames(
         input_path="/Volumes/西数4T外置/ffmpeg_output/test.mp4", 
-        output_path="/Volumes/西数4T外置/ffmpeg_output/test_223.mp4", 
+        output_path=None, 
         target_fps=10.0
     )
 

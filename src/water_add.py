@@ -27,7 +27,7 @@ def add_multiple_watermarks(
         timestamp = datetime.now().strftime("%Y年%m月%d日%H时%M分%S秒%f")[:-3]
         
         # 构建新的文件名：原文件名_时间戳.扩展名
-        new_filename = f"{input_filename_no_ext}_{timestamp}{input_ext}"
+        new_filename = f"{input_filename_no_ext}_加水印_{timestamp}{input_ext}"
         
         # 组合成完整的输出路径
         output_video = os.path.join(input_dir, new_filename)
