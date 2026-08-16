@@ -1,25 +1,40 @@
 import subprocess
 import os
+from datetime import datetime
 
 def add_multiple_watermarks(
     input_video: str, 
-    output_video: str, 
-    watermarks: list[dict], 
-    default_font_path: str = "simhei.ttf"
+    output_video: str = None,  # 修改：设置为可选参数
+    watermarks: list[dict] = None, 
+    default_font_path: str = "simhei.ttf",
+    preserve_quality: bool = True
 ) -> None:
     """
-    支持同时添加多个文字水印，包含水平垂直居中及位置偏移功能
-    
-    :param input_video: 输入视频路径
-    :param output_video: 输出视频路径
-    :param watermarks: 水印配置列表，每个元素是一个字典
-                       新增 offset 参数: (x_offset, y_offset)
-    :param default_font_path: 默认字体路径
+    支持同时添加多个文字水印，包含水平垂直居中及位置偏移功能。
+    如果未指定输出路径，将自动在原文件目录下生成带时间戳的新文件。
     """
-    
-    # 1. 位置映射逻辑
+    if watermarks is None:
+        watermarks = []
+
+    # 1. 自动处理输出文件路径
+    if not output_video:
+        # 获取输入文件的目录、文件名和扩展名
+        input_dir = os.path.dirname(input_video)
+        input_filename_no_ext = os.path.splitext(os.path.basename(input_video))[0]
+        input_ext = os.path.splitext(input_video)[1]
+        
+        # 生成当前时间戳，精确到毫秒
+        timestamp = datetime.now().strftime("%Y年%m月%d日%H时%M分%S秒%f")[:-3]
+        
+        # 构建新的文件名：原文件名_时间戳.扩展名
+        new_filename = f"{input_filename_no_ext}_{timestamp}{input_ext}"
+        
+        # 组合成完整的输出路径
+        output_video = os.path.join(input_dir, new_filename)
+        print(f"ℹ️ 未指定输出路径，将自动生成: {output_video}")
+
+    # 2. 位置映射逻辑
     def get_position_xy(pos: str):
-        # 基础坐标表达式，不包含偏移
         pos_map = {
             "top_left":     "x=10:y=10",
             "top_right":    "x=w-tw-10:y=10",
@@ -31,80 +46,103 @@ def add_multiple_watermarks(
 
     filter_parts = []
 
-    # 2. 遍历配置生成滤镜链
+    # 3. 遍历水印配置，构建滤镜链
     for wm in watermarks:
-        text = wm.get("text", "")
-        position = wm.get("position", "bottom_right")
-        custom_xy = wm.get("custom_xy")
-        offset = wm.get("offset", (0, 0))  # 获取偏移量，默认为 (0, 0)
+        text = wm.get("text", "Watermark")
+        pos = wm.get("position")
         font_size = wm.get("font_size", 24)
         font_color = wm.get("font_color", "white")
-        font_path = wm.get("font_path", default_font_path)
-
-        # 处理坐标逻辑
-        if custom_xy:
-            # 如果是绝对坐标，直接加上偏移
-            x_val = custom_xy[0] + offset[0]
-            y_val = custom_xy[1] + offset[1]
-            xy_str = f"x={x_val}:y={y_val}"
+        offset = wm.get("offset", (0, 0))
+        
+        # 支持自定义坐标或预设位置
+        if wm.get("custom_xy"):
+            x_expr, y_expr = wm["custom_xy"]
         else:
-            # 如果是预设位置，在基础表达式上追加偏移计算
-            base_xy = get_position_xy(position)
-            x_offset, y_offset = offset
-            
-            # 构建带偏移的表达式，例如：x=10+20:y=10-5
-            # 这里直接拼接字符串，利用 FFmpeg 的表达式计算能力
-            xy_str = f"{base_xy}+{x_offset}:{base_xy.split(':')[-1].split('=')[1]}+{y_offset}"
-            # 上面那行逻辑有点绕，为了代码可读性，我们换一种更清晰的写法：
-            base_x_expr = base_xy.split(':')[0].split('=')[1] # 获取 "10" 或 "w-tw-10"
-            base_y_expr = base_xy.split(':')[1].split('=')[1] # 获取 "10" 或 "h-th-10"
-            
-            # 重新组合，加上偏移量
-            # 注意：如果偏移量是负数，这里会变成 "10+-5"，FFmpeg 也能识别，但为了美观可以处理一下
-            x_op = "+" if x_offset >= 0 else ""
-            y_op = "+" if y_offset >= 0 else ""
-            
-            xy_str = f"x={base_x_expr}{x_op}{x_offset}:y={base_y_expr}{y_op}{y_offset}"
+            base_xy = get_position_xy(pos)
+            x_expr = base_xy.split(":")[0].split("=")[1]
+            y_expr = base_xy.split(":")[1].split("=")[1]
 
-        # 构建单个 drawtext 滤镜字符串
+        # 应用偏移量
+        if offset[0] != 0:
+            x_expr = f"{x_expr}+{offset[0]}"
+        if offset[1] != 0:
+            y_expr = f"{y_expr}+{offset[1]}"
+        
+        # 构建完整 drawtext 滤镜
         filter_str = (
             f"drawtext="
             f"text='{text}':"
-            f"fontfile='{font_path}':"
+            f"fontfile='{default_font_path}':"
             f"fontsize={font_size}:"
             f"fontcolor={font_color}:"
-            f"{xy_str}"
+            f"x={x_expr}:"
+            f"y={y_expr}"
         )
         filter_parts.append(filter_str)
 
-    # 3. 使用逗号连接多个滤镜
-    vf_string = ",".join(filter_parts)
+    # 4. 合并所有滤镜
+    vf_filter = ",".join(filter_parts)
 
-    # 4. 构建并执行命令
-    cmd = [
-        "ffmpeg", "-y", 
-        "-i", input_video,
-        "-vf", vf_string,
-        "-c:a", "copy",
-        output_video
-    ]
+    # 5. 构建 FFmpeg 命令
+    cmd = ["ffmpeg", "-i", input_video, "-vf", vf_filter]
 
-    print(f"正在执行命令: {' '.join(cmd)}")
+    # 6. 如果启用画质保留模式，尝试匹配原视频码率
+    if preserve_quality:
+        try:
+            result = subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=bit_rate", "-of", "default=noprint_wrappers=1:nokey=1", input_video],
+                capture_output=True, text=True, check=True
+            )
+            original_bitrate = result.stdout.strip()
+            if original_bitrate and original_bitrate != "N/A":
+                cmd.extend(["-b:v", original_bitrate])
+        except Exception:
+            cmd.extend(["-b:v", "5000k"])
+        
+        cmd.extend(["-preset", "slow"])
     
-    try:
-        subprocess.run(cmd, check=True)
-        print(f"成功！水印已添加至: {output_video}")
-    except subprocess.CalledProcessError as e:
-        print(f"FFmpeg 执行失败: {e}")
+    # 7. 复制音频流，避免音频重编码
+    cmd.extend(["-c:a", "copy", output_video])
 
+    # 8. 执行命令
+    print(f"执行命令: {' '.join(cmd)}")
+    subprocess.run(cmd, check=True)
+    print(f"✅ 水印添加完成: {output_video}")
+
+
+# === 使用示例 ===
+if __name__ == "__main__":
+    watermarks_config = [
+        {
+            "text": "左上角水印",
+            "position": "top_left",
+            "font_size": 30,
+            "font_color": "yellow",
+            "offset": (20, 20)  # 向右下偏移20像素
+        },
+        {
+            "text": "居中水印",
+            "position": "center",
+            "font_size": 40,
+            "font_color": "red@0.8"
+        },
+        {
+            "text": "右下角偏移",
+            "position": "bottom_right",
+            "font_size": 24,
+            "font_color": "white",
+            "offset": (-30, -30)  # 向左上偏移30像素
+        }
+    ]
 
 
 
 if __name__ == "__main__":
     input_video = "/Volumes/西数4T外置/ffmpeg_output/test.mp4"
-    output_video = "/Volumes/西数4T外置/ffmpeg_output/test_222.mp4"
+    output_video = None
     font_path ="/Users/teacher/Library/Fonts/FZDHTJW.TTF"
     font_color="white@0.8"  # 80% 透明度的白色
+    preserve_quality = False # 是否开启画质保留模式
 
     my_watermarks = [
         {
@@ -156,7 +194,8 @@ if __name__ == "__main__":
         input_video=input_video,
         output_video=output_video,
         watermarks=my_watermarks,
-        default_font_path=font_path # 记得替换为你电脑里的字体路径
+        default_font_path=font_path,
+        preserve_quality = preserve_quality,
     )
 
 
