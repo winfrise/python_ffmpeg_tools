@@ -75,18 +75,13 @@ def cut_video_segments(
 
     return generated_files
 if __name__ == "__main__":
-    video_file = "/Volumes/xxx.mp4"
-    ouput_dir = "/Volumes/xxx/ffmpeg_output"
+    video_file = "/Volumes/西数4T外置/thu-2026-0813/xxx.mp4"
+    ouput_dir = "/Volumes/西数4T外置/ffmpeg_output"
     # 定义需要截取的多个片段 (开始秒数, 结束秒数)
     my_segments = [
-        ("1:05:20", "1:11:40"),
-        # (time_to_seconds("49:40"), time_to_seconds("50:10")),   
-        # (time_to_seconds("1:00:00"), time_to_seconds("1:00:30")),   
-        # (time_to_seconds("1:40:50"), time_to_seconds("1:41:20")),   
-        # (time_to_seconds("7:50"), time_to_seconds("8:20")),   
-        # (time_to_seconds("7:50"), time_to_seconds("8:20")),   
-        # (60, 90),       
-        # (120.0, 135.5), 
+        ("3:03", "3:38"),
+        ("7:40", "8:40"),
+        ("10:00", "10:20"),
     ]
     
     # 一行代码搞定批量截取
