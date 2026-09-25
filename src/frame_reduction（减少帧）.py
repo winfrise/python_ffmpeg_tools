@@ -84,10 +84,10 @@ def reduce_video_frames(
 
 
 if __name__ == "__main__":
-
+    output_path = "/Users/teacher/Downloads/教学视频.txt/未命名文件夹"
     result = reduce_video_frames(
-        input_path="/Volumes/西数4T外置/ffmpeg_output/test.mp4", 
-        output_path=None, 
+        input_path="https://vodbj.wqketang.com/30367605500071ef865d7fb2780c0102/f933eb9a47be4d06b3df4b907170962b-d67ce0e7afe6e3128f57244ce1b1001b-sd-nbv1.mp4?auth_key=1788854629-aded9909309740ae93dd9374f6cfffa4-0-2411d40ab392bde44c48a788d28cda9d", 
+        output_path=output_path, 
         target_fps=10.0
     )
 
