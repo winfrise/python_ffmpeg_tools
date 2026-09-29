@@ -37,7 +37,7 @@ def download_m3u8(m3u8_url, output_path):
 
 # --- 使用示例 ---
 if __name__ == "__main__":
-    url = "https://k0uday1dyb8y9azw2408x8722xc900x3xx1az.djvod.ndcimgs.com/vod-rt-remux/hls-ts/v0/REALTIME_REMUX_TS_4999/video-def/enc_5243879015455678287_b.mp4/5243879015455678287_7cf51140f8c64705_9636_hlsob.m3u8?x-ks-ptid=199118655772&x-kcdn-pid=12021&kwai-not-alloc=self-cdn&ocid=1100000215&kcdntag=p:Henan;i:ChinaUnicom;ft:UNKNOWN;h:UNKNOWN;pn:webserverHls&ss=vpm"  # 替换为你的 m3u8 链接
-    save_path = "/Users/teacher/Desktop/百度网盘下载/11.mp4"    # 替换为你的保存路径
+    url = "https://v23-vod-3.kwaicdn.com/vod-rt-remux/hls-ts/v0/REALTIME_REMUX_TS_4999/video-def/enc_5231775593430599327_b.mp4/5231775593430599327_0cae0e7748d1cc16_8495_hlsob.m3u8?x-kcdn-pid=12021&kwai-not-alloc=0&pkey=AAXZ4MUvPYgD4mdmbnRlw3gZXHxDAtCfbDVgy9SiGxv_EoSy_Tg_v9t6HFI7rPBCOvsLRRkwOQsGsmpL2g2euWz8Ht5t__3MculaSqc4no0jcKVEWmLGSsztbVpfouXnink&ss=vpm"  # 替换为你的 m3u8 链接
+    save_path = "/Users/teacher/Desktop/百度网盘下载/22.mp4"    # 替换为你的保存路径
     
     download_m3u8(url, save_path)
