@@ -210,7 +210,7 @@ def download_m3u8(m3u8_url, save_dir, save_name, headers=None, fmt="auto"):
 # 使用示例
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    url = ("https://op.udhhzr.cn/videos5/13bf809a726064ed83b4340783a819df/13bf809a726064ed83b4340783a819df.m3u8?auth_key=1791876354-6acddd02e7561-0-c60962cb9259c6f4905f3da01854044b&v=3&time=0&project_id=tj005&pv=1")
+    url = ("https://v26-web.douyinvod.com/064420e4e994b4b89580cc2a968152e8/6ae1fd31/video/tos/cn/tos-cn-vd-0026/osDIGgu8AAqjBjvN7Ff2KTDC6AexfEBkJAQtA4/media-video-hvc1/?a=6383&ch=0&cr=8&dr=0&er=1&lr=default&cd=0%7C0%7C0%7C3&cv=1&br=515&bt=515&cs=4&ds=6&eid=45312&mime_type=video_mp4&qs=11&rc=N2g0ZTlpMzs0O2RnPDw0ZUBpajk0eHE5cmVkOjMzNGkzM0BiMGIvYl8yNmIxYl4tNTIyYSNzMW1sMmRjaXBhLS1kLTBzcw%3D%3D&btag=c0000e00028000&cquery=100w_100o&dy_q=1793108836&l=20261027214716B5896AAE2541A17F4A00")
 
     # 保存目录与保存文件名分离
     save_dir = "/Volumes/西数4T外置/ff_2026-10"
