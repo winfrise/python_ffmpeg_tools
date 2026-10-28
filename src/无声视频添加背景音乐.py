@@ -78,8 +78,8 @@ def add_background_music(video_path, music_path, output_path, bgm_volume=0.3):
 # add_background_music('001.mp4', '11.wav', 'output.mp4')
 # 示例调用
 if __name__ == "__main__":
-    video_path = "/Users/teacher/Desktop/111111/001.mp4"
-    music_path = "/Users/teacher/Desktop/111111/11.wav"
+    video_path = "/Volumes/西数4T外置/ff_2026-10/11.mp4"
+    music_path = "/Volumes/西数4T外置/ff_2026-10/11.mp3"
 
     base_name, ext = os.path.splitext(video_path)
     output_path = f"{base_name}_output_合并{ext}"    # 替换为你期望的输出路径
